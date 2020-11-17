@@ -1,5 +1,36 @@
+import requests
+from bs4 import BeautifulSoup
+
 class scp():
-    def getTitle(number):
+
+    number = 0
+
+    def getTitle(self):
+        
+        scpClass = scp()
+        number = self.number
+
+        print(number)
+        series = scp.getSeries()
+        toc = scp.getToc(number,self)
+
+        if (series == 1):
+            url = "http://www.scpwiki.com/scp-series"
+        else:
+            url = "http://www.scpwiki.com/scp-series-{}".format(series)
+
+        page = requests.get(url)
+        soup = BeautifulSoup(page.content, 'html.parser')
+
+        print (url)
+        print(series)
+        print(toc)
+
+    def getSeries(self):
+
+        number = self.number
+        print(type(number))
+
         series = 0
         if (number < 1000):
             series = 1
@@ -14,9 +45,36 @@ class scp():
         elif(number < 6000):
             series = 6
         
-        if (series == 1):
-            url = "http://www.scpwiki.com/scp-series"
-        else:
-            url = "http://www.scpwiki.com/scp-series-{}".format(series)
+        return series
 
-        print (url)
+
+    def getToc(self, number):
+        
+        toc = 0
+        series = scp.getSeries(number,self)
+
+        if (number - ((series-1)*1000) < 100):
+            toc = 2
+        elif(number - ((series-1)*1000) < 200):
+            toc = 3
+        elif(number - ((series-1)*1000) < 300):
+            toc = 4
+        elif(number - ((series-1)*1000) < 400):
+            toc = 5
+        elif(number - ((series-1)*1000) < 500):
+            toc = 6
+        elif(number - ((series-1)*1000) < 600):
+            toc = 7
+        elif(number - ((series-1)*1000) < 700):
+            toc = 8
+        elif(number - ((series-1)*1000) < 800):
+            toc = 9
+        elif(number - ((series-1)*1000) < 900):
+            toc = 10
+        elif(number - ((series-1)*1000) < 1000):
+            toc = 11
+        
+        return toc
+
+    def setNumber(self,newNumber):
+       self.number = newNumber

@@ -1,6 +1,9 @@
+# TODO: fix SCP_Machine class
+# TODO: add title to information
+# TODO: add author to information
+
 # --- Imports ---
 import re
-from sys import int_info
 import tkinter as tk
 from bs4 import BeautifulSoup
 import requests
@@ -32,7 +35,7 @@ def search():
         soup = BeautifulSoup(page.content, 'html.parser')
         results = soup.find(id='main-content')
         pageElements = results.find_all('p')
-        machine.getTitle(int(e1.get()))
+        #machine.getTitle(int(e1.get()))
 
         for i in pageElements:
             objectClass = re.search("Object Class:</strong> ((.*?))</p>", str(i))
