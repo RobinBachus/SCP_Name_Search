@@ -5,14 +5,15 @@ class scp():
 
     number = 0
 
-    def getTitle(self):
+    @classmethod
+    def getTitle(self,number):
         
         scpClass = scp()
-        number = self.number
+        #number = self.number
 
         print(number)
-        series = scp.getSeries()
-        toc = scp.getToc(number,self)
+        series = scp.getSeries(number)
+        toc = scp.getToc(number)
 
         if (series == 1):
             url = "http://www.scpwiki.com/scp-series"
@@ -26,10 +27,10 @@ class scp():
         print(series)
         print(toc)
 
-    def getSeries(self):
+    @classmethod
+    def getSeries(self,number):
 
-        number = self.number
-        print(type(number))
+        #number = self.number
 
         series = 0
         if (number < 1000):
@@ -45,13 +46,14 @@ class scp():
         elif(number < 6000):
             series = 6
         
-        return series
+        return int(series)
 
-
-    def getToc(self, number):
+    @classmethod
+    def getToc(self,number):
         
+        #number = self.number
         toc = 0
-        series = scp.getSeries(number,self)
+        series = scp.getSeries(number)
 
         if (number - ((series-1)*1000) < 100):
             toc = 2
