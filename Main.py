@@ -1,10 +1,11 @@
-# TODO: fix SCP_Machine class
-# TODO: add title to information
+#! /usr/bin/env python3
+
 # TODO: add author to information
 
 # --- Imports ---
 import re
 import tkinter as tk
+from tkinter.constants import WORD
 from bs4 import BeautifulSoup
 import requests
 from SCP_Machine import scp as machine
@@ -22,55 +23,89 @@ def show_entry_fields():
     t1.insert(tk.END, e1.get())
 
 def search():
-    #try:
     if (e1.get() != "" and int(e1.get()) > 99 and float (e1.get()) == int(e1.get())):
         t1.delete("1.00", "end")
         url = "http://www.scp-wiki.net/scp-{}".format(str(e1.get()))
         print (url)
-        # print(url)
 
         # this takes the url and recives its html file
-        t1.insert("end",url)
+        t1.insert("end","Url: {}".format(url))
         page = requests.get(url)
         soup = BeautifulSoup(page.content, 'html.parser')
         results = soup.find(id='main-content')
         pageElements = results.find_all('p')
-        #machine.getTitle(int(e1.get()))
 
+        # Find and insert the title of the scp
+        Title = machine.getTitle(int(e1.get()))
+        Title = "\n\nTitle: {}\n".format(Title)
+        t1.insert("end", Title)
+
+        # Find and insert the object class
         for i in pageElements:
             objectClass = re.search("Object Class:</strong> ((.*?))</p>", str(i))
             if objectClass == None:
                 continue
             objectClass = str (objectClass.group(1))
-            if (re.search("<span style=((.*?));",objectClass)== None):
+
+            # This is code for extracting the class from elements with different styles (ex. scp-1762, scp-3987)
+            if (re.search("<span style=((.*?));",objectClass)== None and re.search("<span style=((.*?))</span>",objectClass)== None):
                 print (objectClass)
                 objectClass = "\nObject class: {}".format(str(objectClass))
-            else:
+            elif (re.search("<span style=((.*?));",objectClass) != None):
                 objectClass = re.search("</span> ((.*?))</p>", str(i))
                 objectClass = str(objectClass.group(1))
                 objectClass = "\nObject class: {}".format(str(objectClass))
+            elif (re.search("<span style=((.*?))</span>",objectClass) != None):
+                objectClass = re.search('">((.*?))</span>', str(i))
+                objectClass = str(objectClass.group(1))
+                objectClass = "\nObject class: {}".format(str(objectClass))
             t1.insert("end", objectClass)  
+            break
+            
         
+        # Find and insert the rating
         pageContent = soup.find(id='page-content')
         rating_Temp = pageContent.find('span', class_='number prw54353')
         rating_Temp = re.search('prw54353">((.*?))</span>', str(rating_Temp))
         if (rating_Temp != None):   
             rating = str(rating_Temp.group(1))
-            t1.insert("end", "      Rating: {}".format(rating))
+            t1.insert("end", "\nRating: {}".format(rating))
+
+        # Find and insert the tags
+        page_tags = results.find_all('div', class_='page-tags')
+        for page_tags in page_tags:
+                    Tags = page_tags.find_all('a')
+                    if None in Tags:
+                        continue
+                    list(Tags)
+
+                    # getting the tag name from the element
+                    t1.insert("end", "\n\ntags: ")
+                    for i in Tags:
+                        var = str(i)
+                        pattern = ">((.*?))<"
+                        var = re.search(pattern, var)
+
+                        var_tag = str(var.group(1))
+                        # print(var_tag)
+                        
+                        t1.insert("end", "{}, ".format(var_tag))
+                    t1.delete("end-3c","end")
+
+
     else:
         t1.delete("1.00", "end")
         t1.insert("end", "Please type a whole number above 99.")
-    """ except:
-        t1.delete("1.00", "end")
-        t1.insert("end", "Please type a whole number above 99.")"""
 
 # --- Main code ---
 root = tk.Tk()
+
+
 tk.Label(root, text="scp-").grid(sticky=tk.W, row=1)
 
 l1 = tk.Label(root,text="Type the number of an scp")
 e1 = tk.Entry(root)
-t1 = tk.Text(root, height=5, width=52)
+t1 = tk.Text(root, height=10, width=52,wrap=WORD)
 
 l1.grid(row=0, sticky=tk.W)
 e1.grid(row=1, columnspan=2, sticky=tk.W, padx=30)

@@ -1,3 +1,4 @@
+import re
 import requests
 from bs4 import BeautifulSoup
 
@@ -8,8 +9,7 @@ class scp():
     @classmethod
     def getTitle(self,number):
         
-        scpClass = scp()
-        #number = self.number
+        Title = None
 
         print(number)
         series = scp.getSeries(number)
@@ -20,12 +20,25 @@ class scp():
         else:
             url = "http://www.scpwiki.com/scp-series-{}".format(series)
 
+        print(url)
         page = requests.get(url)
         soup = BeautifulSoup(page.content, 'html.parser')
+        results = soup.find(id='page-content')
 
-        print (url)
-        print(series)
-        print(toc)
+        lists = results.find_all('ul')
+        for i in lists:
+            if list == None:
+                continue
+            else:
+                searchPattern = '-{0}</a> - ((.*?))</li>'.format(number)
+                Title = re.search(searchPattern,str(i))
+                if Title == None:
+                    continue
+                else:
+                    Title = str(Title.group(1))
+                    break
+
+        return Title
 
     @classmethod
     def getSeries(self,number):
