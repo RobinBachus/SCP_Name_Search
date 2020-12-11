@@ -1,15 +1,21 @@
 #! /usr/bin/env python3
 
+# --- Todo ---
 # TODO: add author to information
+# TODO: divide search function in multiple function and move those to SCP_Machine Class
+# TODO: add comments to code
+
 
 # --- Imports ---
 import re
 import tkinter as tk
-from tkinter.constants import WORD
-from bs4 import BeautifulSoup
-import requests
-from SCP_Machine import scp as machine
+from tkinter.constants import SUNKEN, WORD
 
+import requests
+from bs4 import BeautifulSoup
+from PIL import Image, ImageTk
+
+from SCP_Machine import scp as machine
 
 # --- Variables ---
 scp = ""
@@ -33,35 +39,25 @@ def search():
         page = requests.get(url)
         soup = BeautifulSoup(page.content, 'html.parser')
         results = soup.find(id='main-content')
-        pageElements = results.find_all('p')
 
         # Find and insert the title of the scp
         Title = machine.getTitle(int(e1.get()))
         Title = "\n\nTitle: {}\n".format(Title)
         t1.insert("end", Title)
 
-        # Find and insert the object class
-        for i in pageElements:
-            objectClass = re.search("Object Class:</strong> ((.*?))</p>", str(i))
-            if objectClass == None:
-                continue
-            objectClass = str (objectClass.group(1))
+        # Find and insert an image (if any are present)
+        global scpImage
+        global defaultImg
+        pageContent = soup.find(id='page-content')
+        scpImage = machine.getImage(pageContent)
+        if scpImage != None:
+            c1.itemconfig("scp_image", image=scpImage)
+        else:
+            c1.itemconfig("scp_image", image=defaultImg)
 
-            # This is code for extracting the class from elements with different styles (ex. scp-1762, scp-3987)
-            if (re.search("<span style=((.*?));",objectClass)== None and re.search("<span style=((.*?))</span>",objectClass)== None):
-                print (objectClass)
-                objectClass = "\nObject class: {}".format(str(objectClass))
-            elif (re.search("<span style=((.*?));",objectClass) != None):
-                objectClass = re.search("</span> ((.*?))</p>", str(i))
-                objectClass = str(objectClass.group(1))
-                objectClass = "\nObject class: {}".format(str(objectClass))
-            elif (re.search("<span style=((.*?))</span>",objectClass) != None):
-                objectClass = re.search('">((.*?))</span>', str(i))
-                objectClass = str(objectClass.group(1))
-                objectClass = "\nObject class: {}".format(str(objectClass))
+        # Find and insert the object class
+            objectClass = machine.getObjectClass(results)
             t1.insert("end", objectClass)  
-            break
-            
         
         # Find and insert the rating
         pageContent = soup.find(id='page-content')
@@ -91,33 +87,34 @@ def search():
                         
                         t1.insert("end", "{}, ".format(var_tag))
                     t1.delete("end-3c","end")
-
-
     else:
         t1.delete("1.00", "end")
         t1.insert("end", "Please type a whole number above 99.")
 
+
 # --- Main code ---
 root = tk.Tk()
 
+global defaultImg
+defaultImg = Image.open("images/imageMissing.jpg")
+defaultImg = defaultImg.resize((round(defaultImg.size[0]*0+160), round(defaultImg.size[1]*0+160)))
+defaultImg = ImageTk.PhotoImage(defaultImg)
 
 tk.Label(root, text="scp-").grid(sticky=tk.W, row=1)
 
 l1 = tk.Label(root,text="Type the number of an scp")
 e1 = tk.Entry(root)
 t1 = tk.Text(root, height=10, width=52,wrap=WORD)
+#img1 = tk.Label(root, image=defaultImg,borderwidth=2,relief=SUNKEN,padx=100)
+c1 = tk.Canvas(root, width=160,height=160,borderwidth=2,relief=SUNKEN)
+img1 = c1.create_image(85, 85, image=defaultImg, tag="scp_image")
 
 l1.grid(row=0, sticky=tk.W)
 e1.grid(row=1, columnspan=2, sticky=tk.W, padx=30)
 t1.grid(row=2)
+c1.grid(row=2,column=3,padx=3,pady=15)
 
-tk.Button(root, 
-          text='Quit', 
-          command=root.quit).grid(row=3, 
-                                    column=0, 
-                                    sticky=tk.W, 
-                                    pady=4)
-
+tk.Button(root, text='Quit', command=root.quit).grid(row=3, column=0, sticky=tk.W, pady=4)
 tk.Button(root, text='Show', command=search).grid(row=0, column=0, sticky=tk.W, rowspan=2, padx= 160)
 
 print(e1.get())
