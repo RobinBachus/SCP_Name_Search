@@ -91,8 +91,7 @@ class scp:
         return final_scpImage
 
     @classmethod
-    def getObjectClass(self, results):
-        pageElements = results.find_all('p')
+    def getObjectClass(self, pageElements):
         for i in pageElements:
             objectClass = re.search("Object Class:</strong> ((.*?))</p>", str(i))
             if objectClass == None:
@@ -113,6 +112,11 @@ class scp:
             
             print(objectClass)
             return objectClass
+
+    @classmethod
+    def getRating(self, pageContent):
+        rating_Temp = pageContent.find('span', class_='number prw54353')
+        rating_Temp = re.search('prw54353">((.*?))</span>', str(rating_Temp))
 
     @classmethod
     def getSize(self):

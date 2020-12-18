@@ -40,6 +40,9 @@ def search():
         soup = BeautifulSoup(page.content, 'html.parser')
         results = soup.find(id='main-content')
 
+        pageContent = soup.find(id='page-content')
+        pageElements = results.find_all('p')
+
         # Find and insert the title of the scp
         Title = machine.getTitle(int(e1.get()))
         Title = "\n\nTitle: {}\n".format(Title)
@@ -48,7 +51,6 @@ def search():
         # Find and insert an image (if any are present)
         global scpImage
         global defaultImg
-        pageContent = soup.find(id='page-content')
         scpImage = machine.getImage(pageContent)
         if scpImage != None:
             c1.itemconfig("scp_image", image=scpImage)
@@ -56,15 +58,13 @@ def search():
             c1.itemconfig("scp_image", image=defaultImg)
 
         # Find and insert the object class
-            objectClass = machine.getObjectClass(results)
+            objectClass = machine.getObjectClass(pageElements)
             t1.insert("end", objectClass)  
         
         # Find and insert the rating
-        pageContent = soup.find(id='page-content')
-        rating_Temp = pageContent.find('span', class_='number prw54353')
-        rating_Temp = re.search('prw54353">((.*?))</span>', str(rating_Temp))
-        if (rating_Temp != None):   
-            rating = str(rating_Temp.group(1))
+        ratingTemp = machine.getRating(pageContent) 
+        if (ratingTemp != None):   
+            rating = str(ratingTemp.group(1))
             t1.insert("end", "\nRating: {}".format(rating))
 
         # Find and insert the tags

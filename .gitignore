@@ -1,6 +1,9 @@
 # A dir of test files
 TestFiles/
 
+# Temparary files
+images/imageDomwnload
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
