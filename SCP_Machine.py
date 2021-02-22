@@ -1,3 +1,5 @@
+import glob
+import os
 import re
 from PIL import Image,ImageTk
 import requests
@@ -5,12 +7,12 @@ from bs4 import BeautifulSoup
 
 
 class scp:
+
     @classmethod
     def getTitle(self, number):
 
         Title = None
 
-        print(number)
         series = scp.getSeries(number)
 
         if series == 1:
@@ -18,7 +20,6 @@ class scp:
         else:
             url = "http://www.scpwiki.com/scp-series-{}".format(series)
 
-        print(url)
         page = requests.get(url)
         soup = BeautifulSoup(page.content, "html.parser")
         results = soup.find(id="page-content")
@@ -34,6 +35,13 @@ class scp:
                     continue
                 else:
                     Title = str(Title.group(1))
+                    TitleStrong = re.search("<strong>((.*?))</strong>", Title)
+                    if (TitleStrong != None):
+                        Title = re.search("((.*?)) - <strong>", Title)
+                        Title = str(Title.group(1))
+                        TitleStrong = str(TitleStrong.group(1))
+
+                        Title = "{} - {}".format(Title, TitleStrong)
                     break
 
         return Title
@@ -61,24 +69,41 @@ class scp:
 
 
     @classmethod
-    def getImage(self, pageContent):
+    def DownloadImages(self, pageContent): # Test scp: 4015
+        
+        # clear previous images
+        files = glob.glob('TestFiles/images/imageDownload*.png')
+        for f in files:
+            os.remove(f)
+
+        # find images from current scp
         img_Temp = pageContent.find_all('div', class_='scp-image-block block-right')
-        img_Temp = re.search('src="((.*?))"', str(img_Temp))
-        if (img_Temp != None):  
-            print(img_Temp) 
-            url = str(img_Temp.group(1))
-            print (url)
+        img_Temp = re.findall('src="((.*?))"', str(img_Temp), re.DOTALL)
+        if (len(img_Temp) != 0): 
+            # download all available images 
+            counter = 0
+            for i in img_Temp:
+                response = requests.get(i[0])
+
+                counter+=1
+                imageLocation = "TestFiles/images/imageDownload{}.png".format(counter)
+                file = open(imageLocation, "wb")
+                file.write(response.content)
+                file.close()
+            return len(img_Temp)
         else:
+            return 1
+
+
+    @classmethod
+    def getImage(self, index):
+        global scpImage
+
+        try:
+            scpImage = Image.open("TestFiles/images/imageDownload{}.png".format(index))
+        except:
             return None
 
-        response = requests.get(url)
-
-        file = open("images/imageDownload.png", "wb")
-        file.write(response.content)
-        file.close()
-
-        global scpImage
-        scpImage = Image.open("images/imageDownload.png")
         if(scpImage.size[1] > scpImage.size[0]):
             width = (160/scpImage.size[1]) * scpImage.size[0]
             height = 160
@@ -92,10 +117,16 @@ class scp:
 
     @classmethod
     def getObjectClass(self, pageElements):
+        counter = 0
         for i in pageElements:
+            counter += 1
             objectClass = re.search("Object Class:</strong> ((.*?))</p>", str(i))
             if objectClass == None:
-                continue
+                if (counter == len(pageElements)):
+                    objectClass = "\nobject class: object class not found"
+                    return objectClass
+                else:
+                    continue
             objectClass = str (objectClass.group(1))
 
             # This is code for extracting the class from elements with different styles (ex. scp-1762, scp-3987)
@@ -109,6 +140,8 @@ class scp:
                 objectClass = re.search('">((.*?))</span>', str(i))
                 objectClass = str(objectClass.group(1))
                 objectClass = "\nObject class: {}".format(str(objectClass))
+            else:
+                objectClass = "\nobject class: object class not found"
             
             print(objectClass)
             return objectClass
@@ -117,6 +150,7 @@ class scp:
     def getRating(self, pageContent):
         rating_Temp = pageContent.find('span', class_='number prw54353')
         rating_Temp = re.search('prw54353">((.*?))</span>', str(rating_Temp))
+        return rating_Temp
 
     @classmethod
     def getSize(self):

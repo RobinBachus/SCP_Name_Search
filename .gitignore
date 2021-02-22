@@ -1,8 +1,14 @@
-# A dir of test files
+# --- Personal files ---
+
+# Test files
 TestFiles/
+ClassMain.py
 
 # Temparary files
 images/imageDomwnload
+
+
+# --- Python Files --- 
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
