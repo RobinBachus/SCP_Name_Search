@@ -1,5 +1,8 @@
 // This is not in detail and is purely for me to keep track of important or big changes
 
-V2.2:
+V2.2.0:
 - Added ability to view multiple images
 - fixed bug where scp's with an image didn't print the object class
+
+V2.2.1:
+- Added basic network error handling
