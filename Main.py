@@ -69,10 +69,14 @@ def search(event=None):
         print (url)
 
         # this takes the url and recives its html file
-        t1.insert("end","Url: {}".format(url))
-        page = requests.get(url)
+        try:
+            page = requests.get(url)
+        except requests.exceptions.ConnectionError:
+            t1.insert(END,"Connection error: \nplease check your internet connection and try again")
+            return
         soup = BeautifulSoup(page.content, 'html.parser')
         results = soup.find(id='main-content')
+        t1.insert("end","Url: {}".format(url))
 
         pageContent = soup.find(id='page-content')
         pageElements = results.find_all('p')

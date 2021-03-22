@@ -7,6 +7,9 @@ ClassMain.py
 # Temparary files
 images/imageDomwnload
 
+# Vs code
+.vscode/
+
 
 # --- Python Files --- 
 
